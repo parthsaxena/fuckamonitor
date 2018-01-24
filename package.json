@@ -1,7 +1,7 @@
 {
-  "name": "bittrex-monitor",
+  "name": "fuckamonitor",
   "version": "1.0.0",
-  "description": "Monitor for currencies on Bittrex.",
+  "description": "Monitors the addition of currencies on several cryptocurrency exchanges.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
