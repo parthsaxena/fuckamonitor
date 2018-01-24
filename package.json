@@ -1,0 +1,14 @@
+{
+  "name": "bittrex-monitor",
+  "version": "1.0.0",
+  "description": "Monitor for currencies on Bittrex.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Parth Saxena",
+  "license": "ISC",
+  "dependencies": {
+    "jsonfile": "^4.0.0"
+  }
+}
