@@ -15,10 +15,14 @@ var binanceCurrentFile = __dirname + "/support/binance/binance_current.json";
 var poloniexFile = __dirname + "/support/poloniex/poloniex_currencies.json";
 var poloniexCurrentFile = __dirname + "/support/poloniex/poloniex_current.json";
 
+var coinExchangeFile = __dirname + "/support/coinexchange/coinexchange_currencies.json";
+var coinExchangeCurrentFile = __dirname + "/support/coinexchange/coinexchange_current.json";
+
 var bittrexRanFirst = false
 var gateIORanFirst = false
 var binanceRanFirst = false
 var poloniexRanFirst = false
+var coinExchangeRanFirst = false
 
 var client = new twitter({
   consumer_key: 'g95e3CY2JC3fMvj4EI7ghf8x3',
@@ -57,9 +61,11 @@ function bittrex() {
           var currentCount = currentJSON.result.length;
           var oldCount = json.result.length;
           if (currentCount > oldCount) {
-            var currencyName = currentJSON.result[currentCount-1].CurrencyLong
+            var currencyName = currentJSON.result[currentCount-1].Currency
+            var currencyLink = "https://bittrex.com/Market/Index?MarketName=BTC-" + currencyName;
+            var exchangeLink = "https://coincodex.com/crypto/" + currencyName.toLowerCase() + "/exchanges/";
             console.log("New coin added to Bittrex: " + currencyName)
-            client.post('statuses/update', {status:  currencyName + ' has been added on the Bittrex Exchange!'},  function(error, tweet, response) {
+            client.post('statuses/update', {status:  currencyName + ' has been added on the bittrex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
             // Write old file
@@ -107,8 +113,10 @@ function gateIO() {
             var ethCheck = btcCheck.replace('_eth', '');
             var usdtCheck = btcCheck.replace('_usdt', '');
             var currency = usdtCheck.toUpperCase();
+            var currencyLink = "https://gate.io/trade/" + currency + "_BTC";
+            var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
             console.log("New coin added to Gate.io: " + currency)
-            client.post('statuses/update', {status:  currency + ' has been added on the Gate.io Exchange!'},  function(error, tweet, response) {
+            client.post('statuses/update', {status:  currency + ' has been added on the gate.io exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
             // Write old file
@@ -151,8 +159,10 @@ function binance() {
           var oldCount = json.symbols.length;
           if (currentCount > oldCount) {
             var currency = currentJSON.symbols[currentCount-1].baseAsset;
+            var currencyLink = "https://www.binance.com/trade.html?symbol=" + currency + "_BTC";
+            var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
             console.log("New coin added to Binance: " + currency)
-            client.post('statuses/update', {status:  currency + ' has been added on the Binance Exchange!'},  function(error, tweet, response) {
+            client.post('statuses/update', {status:  currency + ' has been added on the binance exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
             // Write old file
@@ -194,12 +204,59 @@ function poloniex() {
           var oldCount = Object.keys(json).length;
           if (currentCount > oldCount) {
             var currency = Object.keys(currentJSON)[currentCount-1];
+            var currencyLink = "https://poloniex.com/exchange#btc_" + currency.toLowerCase();
+            var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
             console.log("New coin added to Poloniex: " + currency)
-            client.post('statuses/update', {status:  currency + ' has been added on the Poloniex Exchange!'},  function(error, tweet, response) {
+            client.post('statuses/update', {status:  currency + ' has been added on the poloniex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
             // Write old file
             jsonfile.writeFileSync(poloniexFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
+          } else {
+            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+          }
+        }
+      }
+    })
+  });
+}
+
+function coinExchange() {
+  var request = https.get("https://www.coinexchange.io/api/v1/getmarkets", function(response) {
+    var body = ""
+    response.on("data", function(chunk){
+		  body += chunk;
+	  });
+    response.on("end", function() {
+      var currentJSON = JSON.parse(body);
+      jsonfile.writeFileSync(coinExchangeCurrentFile, currentJSON, function (err) {
+        console.error("Error: " + err)
+      });
+      if (!coinExchangeRanFirst) {
+        jsonfile.writeFileSync(coinExchangeFile, currentJSON, function (err) {
+          console.error("Error: " + err)
+        });
+        coinExchangeRanFirst = true
+      } else {
+        var json = jsonfile.readFileSync(coinExchangeFile)
+        var currentJSON = jsonfile.readFileSync(coinExchangeCurrentFile)
+        if (objectEquals(json, currentJSON)) {
+          console.log("No change on CoinExchange.")
+        } else {
+          var currentCount = currentJSON.result.length;
+          var oldCount = json.result.length;
+          if (currentCount > oldCount) {
+            var currency = currentJSON.result[currentCount-1].MarketAssetCode;
+            var currencyLink = "https://www.coinexchange.io/market/" + currency + "/BTC";
+            var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
+            console.log("New coin added to CoinExchange: " + currency)
+            client.post('statuses/update', {status:  currency + ' has been added on coinexchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
+              console.log("Tweet Response: " + response);
+            });
+            // Write old file
+            jsonfile.writeFileSync(coinExchangeFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
           } else {
@@ -216,6 +273,7 @@ function setup() {
   setInterval(gateIO, INTERVAL)
   setInterval(binance, INTERVAL)
   setInterval(poloniex, INTERVAL)
+  setInterval(coinExchange, INTERVAL)
 }
 function objectEquals(x, y) {
     // if both are function
