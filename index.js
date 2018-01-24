@@ -47,13 +47,9 @@ function bittrex() {
 	  });
     response.on("end", function() {
       var currentJSON = JSON.parse(body);
-      jsonfile.writeFileSync(bittrexCurrentFile, currentJSON, function (err) {
-        console.error("Error: " + err)
-      });
+      jsonfile.writeFileSync(bittrexCurrentFile, currentJSON);
       if (!bittrexRanFirst) {
-        jsonfile.writeFileSync(bittrexFile, currentJSON, function (err) {
-          console.error("Error: " + err)
-        });
+        jsonfile.writeFileSync(bittrexFile, currentJSON);
         bittrexRanFirst = true
       } else {
         var json = jsonfile.readFileSync(bittrexFile)
@@ -72,14 +68,10 @@ function bittrex() {
             client.post('statuses/update', {status:  currencyName + ' has been added on the bittrex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            jsonfile.writeFileSync(bittrexFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(bittrexFile, currentJSON);
           } else {
             console.log("False alarm on Bittrex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            jsonfile.writeFileSync(bittrexFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(bittrexFile, currentJSON);
           }
         }
       }
@@ -95,13 +87,9 @@ function gateIO() {
 	  });
     response.on("end", function() {
       var currentJSON = JSON.parse(body);
-      jsonfile.writeFileSync(gateIOCurrentFile, currentJSON, function (err) {
-        console.error("Error: " + err)
-      });
+      jsonfile.writeFileSync(gateIOCurrentFile, currentJSON);
       if (!gateIORanFirst) {
-        jsonfile.writeFileSync(gateIOFile, currentJSON, function (err) {
-          console.error("Error: " + err)
-        });
+        jsonfile.writeFileSync(gateIOFile, currentJSON);
         gateIORanFirst = true
       } else {
         var json = jsonfile.readFileSync(gateIOFile)
@@ -125,14 +113,10 @@ function gateIO() {
             client.post('statuses/update', {status:  currency + ' has been added on the gate.io exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            jsonfile.writeFileSync(gateIOFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(gateIOFile, currentJSON);
           } else {
             console.log("False alarm on Gate.io. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            jsonfile.writeFileSync(gateIOFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(gateIOFile, currentJSON);
           }
         }
       }
@@ -150,13 +134,9 @@ function binance() {
       var $ = cheerio.load(body);
       var text = $('li.article-list-item').children().first().html();
       var latestCurrency = text.match(/\(([^)]+)\)/)[1];
-      fs.writeFileSync(binanceCurrentFile, latestCurrency, 'utf8', function(err) {
-        if (err) return console.log(err);
-      })
+      fs.writeFileSync(binanceCurrentFile, latestCurrency, 'utf8')
       if (!binanceRanFirst) {
-        fs.writeFileSync(binanceFile, latestCurrency, 'utf8', function(err) {
-          if (err) return console.log(err);
-        })
+        fs.writeFileSync(binanceFile, latestCurrency, 'utf8')
         binanceRanFirst = true
       } else {
         var staticLatest = fs.readFileSync(binanceFile);
@@ -170,9 +150,7 @@ function binance() {
           client.post('statuses/update', {status:  latestCurrency + ' has been added on the binance exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
             console.log("Tweet Response: " + response);
           });
-          fs.writeFileSync(binanceFile, latestCurrency, 'utf8', function(err) {
-            if (err) return console.log(err);
-          })
+          fs.writeFileSync(binanceFile, latestCurrency, 'utf8')
         }
       }
     });
@@ -187,13 +165,9 @@ function poloniex() {
 	  });
     response.on("end", function() {
       var currentJSON = JSON.parse(body);
-      jsonfile.writeFileSync(poloniexCurrentFile, currentJSON, function (err) {
-        console.error("Error: " + err)
-      });
+      jsonfile.writeFileSync(poloniexCurrentFile, currentJSON);
       if (!poloniexRanFirst) {
-        jsonfile.writeFileSync(poloniexFile, currentJSON, function (err) {
-          console.error("Error: " + err)
-        });
+        jsonfile.writeFileSync(poloniexFile, currentJSON);
         poloniexRanFirst = true
       } else {
         var json = jsonfile.readFileSync(poloniexFile)
@@ -211,14 +185,10 @@ function poloniex() {
             client.post('statuses/update', {status:  currency + ' has been added on the poloniex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            jsonfile.writeFileSync(poloniexFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(poloniexFile, currentJSON);
           } else {
             console.log("False alarm on Poloniex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            jsonfile.writeFileSync(poloniexFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(poloniexFile, currentJSON);
           }
         }
       }
@@ -234,13 +204,9 @@ function coinExchange() {
 	  });
     response.on("end", function() {
       var currentJSON = JSON.parse(body);
-      jsonfile.writeFileSync(coinExchangeCurrentFile, currentJSON, function (err) {
-        console.error("Error: " + err)
-      });
+      jsonfile.writeFileSync(coinExchangeCurrentFile, currentJSON);
       if (!coinExchangeRanFirst) {
-        jsonfile.writeFileSync(coinExchangeFile, currentJSON, function (err) {
-          console.error("Error: " + err)
-        });
+        jsonfile.writeFileSync(coinExchangeFile, currentJSON);
         coinExchangeRanFirst = true
       } else {
         var json = jsonfile.readFileSync(coinExchangeFile)
@@ -258,14 +224,10 @@ function coinExchange() {
             client.post('statuses/update', {status:  currency + ' has been added on coinexchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            jsonfile.writeFileSync(coinExchangeFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(coinExchangeFile, currentJSON);
           } else {
             console.log("False alarm on CoinExchange. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            jsonfile.writeFileSync(coinExchangeFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
+            jsonfile.writeFileSync(coinExchangeFile, currentJSON);
           }
         }
       }
