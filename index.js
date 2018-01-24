@@ -1,4 +1,6 @@
 var https = require('https');
+var express = require("express");
+var app = express();
 var fs = require('fs');
 var jsonfile = require('jsonfile');
 var twitter = require('twitter');
@@ -33,6 +35,7 @@ var client = new twitter({
 });
 
 var INTERVAL = 2000;
+var PORT = 8080;
 
 setup()
 
@@ -276,6 +279,8 @@ function setup() {
   setInterval(binance, INTERVAL)
   setInterval(poloniex, INTERVAL)
   setInterval(coinExchange, INTERVAL)
+
+  server()
 }
 
 function objectEquals(x, y) {
@@ -294,4 +299,15 @@ function objectEquals(x, y) {
     var p = Object.keys(x);
     return Object.keys(y).every(function (i) { return p.indexOf(i) !== -1; }) ?
             p.every(function (i) { return objectEquals(x[i], y[i]); }) : false;
+}
+
+function server() {
+ app.listen(PORT, function() {
+   console.log("Server listening on port: " + PORT);
+ });
+ app.get('/ping', function(request, response) {
+   response.writeHeader(200, {"Content-Type": "text/html"});
+   response.write("<html>fuckamonitor - v1.0.0; Server has been running for <code>" + process.uptime() + "</code> seconds.</html>")
+   response.end()
+ });
 }
