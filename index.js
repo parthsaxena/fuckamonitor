@@ -69,13 +69,11 @@ function bittrex() {
             client.post('statuses/update', {status:  currencyName + ' has been added on the bittrex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            // Write old file
             jsonfile.writeFileSync(bittrexFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
           } else {
             console.log("False alarm on Bittrex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            // Write old file
             jsonfile.writeFileSync(bittrexFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
@@ -124,13 +122,11 @@ function gateIO() {
             client.post('statuses/update', {status:  currency + ' has been added on the gate.io exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            // Write old file
             jsonfile.writeFileSync(gateIOFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
           } else {
             console.log("False alarm on Gate.io. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            // Write old file
             jsonfile.writeFileSync(gateIOFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
@@ -212,13 +208,11 @@ function poloniex() {
             client.post('statuses/update', {status:  currency + ' has been added on the poloniex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            // Write old file
             jsonfile.writeFileSync(poloniexFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
           } else {
             console.log("False alarm on Poloniex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            // Write old file
             jsonfile.writeFileSync(poloniexFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
@@ -261,13 +255,11 @@ function coinExchange() {
             client.post('statuses/update', {status:  currency + ' has been added on coinexchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
-            // Write old file
             jsonfile.writeFileSync(coinExchangeFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
           } else {
             console.log("False alarm on CoinExchange. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-            // Write old file
             jsonfile.writeFileSync(coinExchangeFile, currentJSON, function(err) {
               console.error("Error: " + err)
             });
@@ -285,8 +277,8 @@ function setup() {
   setInterval(poloniex, INTERVAL)
   setInterval(coinExchange, INTERVAL)
 }
+
 function objectEquals(x, y) {
-    // if both are function
     if (x instanceof Function) {
         if (y instanceof Function) {
             return x.toString() === y.toString();
@@ -295,15 +287,10 @@ function objectEquals(x, y) {
     }
     if (x === null || x === undefined || y === null || y === undefined) { return x === y; }
     if (x === y || x.valueOf() === y.valueOf()) { return true; }
-
-    // if one of them is date, they must had equal valueOf
     if (x instanceof Date) { return false; }
     if (y instanceof Date) { return false; }
-
-    // if they are not function or strictly equal, they both need to be Objects
     if (!(x instanceof Object)) { return false; }
     if (!(y instanceof Object)) { return false; }
-
     var p = Object.keys(x);
     return Object.keys(y).every(function (i) { return p.indexOf(i) !== -1; }) ?
             p.every(function (i) { return objectEquals(x[i], y[i]); }) : false;
