@@ -27,6 +27,8 @@ var client = new twitter({
   access_token_secret: 'LEdBSyFYHAtd65ihcDLwIill1yGmmxhkUlCp7HsAZz4lm'
 });
 
+var INTERVAL = 2000;
+
 setup()
 
 function bittrex() {
@@ -48,15 +50,25 @@ function bittrex() {
       } else {
         var json = jsonfile.readFileSync(bittrexFile)
         var currentJSON = jsonfile.readFileSync(bittrexCurrentFile)
+
         if (objectEquals(json, currentJSON)) {
           console.log("No change on Bittrex.")
         } else {
-          console.log("Change on Bittrex!")
-          // Tweet
-          client.post('statuses/update', {status: 'A coin has been added on the Bittrex Exchange!'},  function(error, tweet, response) {
-            //if(error) throw error;
-            console.log("Tweet Response: " + response);
-          });
+          var currentCount = currentJSON.result.length;
+          var oldCount = json.result.length;
+          if (currentCount > oldCount) {
+            var currencyName = currentJSON.result[currentCount-1].CurrencyLong
+            console.log("New coin added to Bittrex: " + currencyName)
+            client.post('statuses/update', {status:  currencyName + ' has been added on the Bittrex Exchange!'},  function(error, tweet, response) {
+              console.log("Tweet Response: " + response);
+            });
+            // Write old file
+            jsonfile.writeFileSync(bittrexFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
+          } else {
+            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+          }
         }
       }
     })
@@ -85,10 +97,27 @@ function gateIO() {
         if (objectEquals(json, currentJSON)) {
           console.log("No change on Gate.io.")
         } else {
-          client.post('statuses/update', {status: 'A coin has been added on the Gate.io Exchange!'},  function(error, tweet, response) {
-            //if(error) throw error;
-            console.log("Tweet Response: " + response);
-          });
+          var currentCount = currentJSON.pairs.length;
+          var oldCount = json.pairs.length;
+          if (currentCount > oldCount) {
+            var obj = currentJSON.pairs[currentCount-1];
+            var keys = Object.keys(obj);
+            var rawName = keys[0];
+            var btcCheck = rawName.replace('_btc', '');
+            var ethCheck = btcCheck.replace('_eth', '');
+            var usdtCheck = btcCheck.replace('_usdt', '');
+            var currency = usdtCheck.toUpperCase();
+            console.log("New coin added to Gate.io: " + currency)
+            client.post('statuses/update', {status:  currency + ' has been added on the Gate.io Exchange!'},  function(error, tweet, response) {
+              console.log("Tweet Response: " + response);
+            });
+            // Write old file
+            jsonfile.writeFileSync(gateIOFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
+          } else {
+            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+          }
         }
       }
     })
@@ -118,10 +147,21 @@ function binance() {
         if (objectEquals(json, currentJSON)) {
           console.log("No change on Binance.")
         } else {
-          client.post('statuses/update', {status: 'A coin has been added on the Binance Exchange!'},  function(error, tweet, response) {
-            //if(error) throw error;
-            console.log("Tweet Response: " + response);
-          });
+          var currentCount = currentJSON.symbols.length;
+          var oldCount = json.symbols.length;
+          if (currentCount > oldCount) {
+            var currency = currentJSON.symbols[currentCount-1].baseAsset;
+            console.log("New coin added to Binance: " + currency)
+            client.post('statuses/update', {status:  currency + ' has been added on the Binance Exchange!'},  function(error, tweet, response) {
+              console.log("Tweet Response: " + response);
+            });
+            // Write old file
+            jsonfile.writeFileSync(binanceFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
+          } else {
+            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+          }
         }
       }
     })
@@ -150,10 +190,21 @@ function poloniex() {
         if (objectEquals(json, currentJSON)) {
           console.log("No change on Poloniex.")
         } else {
-          client.post('statuses/update', {status: 'A coin has been added on the Poloniex Exchange!'},  function(error, tweet, response) {
-            //if(error) throw error;
-            console.log("Tweet Response: " + response);
-          });
+          var currentCount = Object.keys(currentJSON).length;
+          var oldCount = Object.keys(json).length;
+          if (currentCount > oldCount) {
+            var currency = Object.keys(currentJSON)[currentCount-1];
+            console.log("New coin added to Poloniex: " + currency)
+            client.post('statuses/update', {status:  currency + ' has been added on the Poloniex Exchange!'},  function(error, tweet, response) {
+              console.log("Tweet Response: " + response);
+            });
+            // Write old file
+            jsonfile.writeFileSync(poloniexFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
+          } else {
+            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+          }
         }
       }
     })
@@ -161,10 +212,10 @@ function poloniex() {
 }
 
 function setup() {
-  setInterval(bittrex, 1000)
-  setInterval(gateIO, 1000)
-  setInterval(binance, 1000)
-  setInterval(poloniex, 1000)
+  setInterval(bittrex, INTERVAL)
+  setInterval(gateIO, INTERVAL)
+  setInterval(binance, INTERVAL)
+  setInterval(poloniex, INTERVAL)
 }
 function objectEquals(x, y) {
     // if both are function
