@@ -2,6 +2,7 @@ var https = require('https');
 var fs = require('fs');
 var jsonfile = require('jsonfile');
 var twitter = require('twitter');
+var cheerio = require('cheerio');
 
 var bittrexFile = __dirname + "/support/bittrex/bittrex_currencies.json";
 var bittrexCurrentFile = __dirname + "/support/bittrex/bittrex_current.json";
@@ -9,8 +10,8 @@ var bittrexCurrentFile = __dirname + "/support/bittrex/bittrex_current.json";
 var gateIOFile = __dirname + "/support/gateio/gateio_currencies.json";
 var gateIOCurrentFile = __dirname + "/support/gateio/gateio_current.json";
 
-var binanceFile = __dirname + "/support/binance/binance_currencies.json";
-var binanceCurrentFile = __dirname + "/support/binance/binance_current.json";
+var binanceFile = __dirname + "/support/binance/binance_latest_static.fam";
+var binanceCurrentFile = __dirname + "/support/binance/binance_latest_current.fam";
 
 var poloniexFile = __dirname + "/support/poloniex/poloniex_currencies.json";
 var poloniexCurrentFile = __dirname + "/support/poloniex/poloniex_current.json";
@@ -73,7 +74,11 @@ function bittrex() {
               console.error("Error: " + err)
             });
           } else {
-            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            console.log("False alarm on Bittrex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            // Write old file
+            jsonfile.writeFileSync(bittrexFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
           }
         }
       }
@@ -124,7 +129,11 @@ function gateIO() {
               console.error("Error: " + err)
             });
           } else {
-            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            console.log("False alarm on Gate.io. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            // Write old file
+            jsonfile.writeFileSync(gateIOFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
           }
         }
       }
@@ -133,48 +142,41 @@ function gateIO() {
 }
 
 function binance() {
-  var request = https.get("https://api.binance.com/api/v1/exchangeInfo", function(response) {
+  var request = https.get("https://support.binance.com/hc/en-us/sections/115000106672-New-Listings", function(response) {
     var body = ""
-    response.on("data", function(chunk){
-		  body += chunk;
-	  });
+    response.on("data", function(chunk) {
+      body += chunk;
+    });
     response.on("end", function() {
-      var currentJSON = JSON.parse(body);
-      delete currentJSON.serverTime
-      jsonfile.writeFileSync(binanceCurrentFile, currentJSON, function (err) {
-        console.error("Error: " + err)
-      });
+      var $ = cheerio.load(body);
+      var text = $('li.article-list-item').children().first().html();
+      var latestCurrency = text.match(/\(([^)]+)\)/)[1];
+      fs.writeFileSync(binanceCurrentFile, latestCurrency, 'utf8', function(err) {
+        if (err) return console.log(err);
+      })
       if (!binanceRanFirst) {
-        jsonfile.writeFileSync(binanceFile, currentJSON, function (err) {
-          console.error("Error: " + err)
-        });
+        fs.writeFileSync(binanceFile, latestCurrency, 'utf8', function(err) {
+          if (err) return console.log(err);
+        })
         binanceRanFirst = true
       } else {
-        var json = jsonfile.readFileSync(binanceFile)
-        var currentJSON = jsonfile.readFileSync(binanceCurrentFile)
-        if (objectEquals(json, currentJSON)) {
+        var staticLatest = fs.readFileSync(binanceFile);
+        if (latestCurrency == staticLatest) {
           console.log("No change on Binance.")
         } else {
-          var currentCount = currentJSON.symbols.length;
-          var oldCount = json.symbols.length;
-          if (currentCount > oldCount) {
-            var currency = currentJSON.symbols[currentCount-1].baseAsset;
-            var currencyLink = "https://www.binance.com/trade.html?symbol=" + currency + "_BTC";
-            var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
-            console.log("New coin added to Binance: " + currency)
-            client.post('statuses/update', {status:  currency + ' has been added on the binance exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
-              console.log("Tweet Response: " + response);
-            });
-            // Write old file
-            jsonfile.writeFileSync(binanceFile, currentJSON, function(err) {
-              console.error("Error: " + err)
-            });
-          } else {
-            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
-          }
+          console.log("Change on Binance.")
+          var currencyLink = "https://www.binance.com/trade.html?symbol=" + latestCurrency + "_BTC";
+          var exchangeLink = "https://coincodex.com/crypto/" + latestCurrency.toLowerCase() + "/exchanges/";
+          console.log("New coin added to Binance: " + latestCurrency)
+          client.post('statuses/update', {status:  latestCurrency + ' has been added on the binance exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
+            console.log("Tweet Response: " + response);
+          });
+          fs.writeFileSync(binanceFile, latestCurrency, 'utf8', function(err) {
+            if (err) return console.log(err);
+          })
         }
       }
-    })
+    });
   });
 }
 
@@ -215,7 +217,11 @@ function poloniex() {
               console.error("Error: " + err)
             });
           } else {
-            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            console.log("False alarm on Poloniex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            // Write old file
+            jsonfile.writeFileSync(poloniexFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
           }
         }
       }
@@ -260,7 +266,11 @@ function coinExchange() {
               console.error("Error: " + err)
             });
           } else {
-            console.log("False alarm. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            console.log("False alarm on CoinExchange. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            // Write old file
+            jsonfile.writeFileSync(coinExchangeFile, currentJSON, function(err) {
+              console.error("Error: " + err)
+            });
           }
         }
       }
