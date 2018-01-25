@@ -64,7 +64,7 @@ function bittrex() {
             var currencyName = currentJSON.result[currentCount-1].Currency
             var currencyLink = "https://bittrex.com/Market/Index?MarketName=BTC-" + currencyName;
             var exchangeLink = "https://coincodex.com/crypto/" + currencyName.toLowerCase() + "/exchanges/";
-            console.log("New coin added to Bittrex: " + currencyName)
+            console.log("New coin added to Bittrex: " + currencyName + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             client.post('statuses/update', {status:  currencyName + ' has been added on the bittrex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
@@ -109,7 +109,7 @@ function gateIO() {
             var currency = usdtCheck.toUpperCase();
             var currencyLink = "https://gate.io/trade/" + currency + "_BTC";
             var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
-            console.log("New coin added to Gate.io: " + currency)
+            console.log("New coin added to Gate.io: " + currency + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             client.post('statuses/update', {status:  currency + ' has been added on the gate.io exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
@@ -181,7 +181,7 @@ function poloniex() {
             var currency = Object.keys(currentJSON)[currentCount-1];
             var currencyLink = "https://poloniex.com/exchange#btc_" + currency.toLowerCase();
             var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
-            console.log("New coin added to Poloniex: " + currency)
+            console.log("New coin added to Poloniex: " + currency + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             client.post('statuses/update', {status:  currency + ' has been added on the poloniex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
@@ -220,7 +220,7 @@ function coinExchange() {
             var currency = currentJSON.result[currentCount-1].MarketAssetCode;
             var currencyLink = "https://www.coinexchange.io/market/" + currency + "/BTC";
             var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
-            console.log("New coin added to CoinExchange: " + currency)
+            console.log("New coin added to CoinExchange: " + currency + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             client.post('statuses/update', {status:  currency + ' has been added on coinexchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
