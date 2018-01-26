@@ -28,7 +28,7 @@ var poloniexRanFirst = false
 var coinExchangeRanFirst = false
 
 var client = new twitter({
-  consumer_key: 'g95e3CY2JC3fMvj4EI7ghf8x3',
+  //consumer_key: 'g95e3CY2JC3fMvj4EI7ghf8x3',
   consumer_secret: 'cdEDUm0hGXdi1Kw2Bj11SUO2jNzGurKtpkBD7S14j4bL0uiZR6',
   access_token_key: '955934157565079552-ze0mn6S5quiqRY1SPPX8Ba2Z6B9HHi7',
   access_token_secret: 'LEdBSyFYHAtd65ihcDLwIill1yGmmxhkUlCp7HsAZz4lm'
@@ -69,6 +69,10 @@ function bittrex() {
               console.log("Tweet Response: " + response);
             });
             jsonfile.writeFileSync(bittrexFile, currentJSON);
+            var time = Date.now()
+            fs.mkdirSync(__dirname + '/additions/bittrex-' + time)
+            jsonfile.writeFileSync(__dirname + '/additions/bittrex-' + time + '/current.json', currentJSON)
+            jsonfile.writeFileSync(__dirname + '/additions/bittrex-' + time + '/currencies.json', json)
           } else {
             console.log("False alarm on Bittrex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             jsonfile.writeFileSync(bittrexFile, currentJSON);
@@ -114,6 +118,10 @@ function gateIO() {
               console.log("Tweet Response: " + response);
             });
             jsonfile.writeFileSync(gateIOFile, currentJSON);
+            var time = Date.now()
+            fs.mkdirSync(__dirname + '/additions/gateio-' + time)
+            jsonfile.writeFileSync(__dirname + '/additions/gateio-' + time + '/current.json', currentJSON)
+            jsonfile.writeFileSync(__dirname + '/additions/gateio-' + time + '/currencies.json', json)
           } else {
             console.log("False alarm on Gate.io. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             jsonfile.writeFileSync(gateIOFile, currentJSON);
@@ -151,6 +159,10 @@ function binance() {
             console.log("Tweet Response: " + response);
           });
           fs.writeFileSync(binanceFile, latestCurrency, 'utf8')
+          var time = Date.now()
+          fs.mkdirSync(__dirname + '/additions/binance-' + time)
+          fs.writeFileSync(__dirname + '/additions/binance-' + time + '/current.json', latestCurrency, 'utf8')
+          fs.writeFileSync(__dirname + '/additions/binance-' + time + '/currencies.json', staticLatest, 'utf8')
         }
       }
     });
@@ -186,6 +198,10 @@ function poloniex() {
               console.log("Tweet Response: " + response);
             });
             jsonfile.writeFileSync(poloniexFile, currentJSON);
+            var time = Date.now()
+            fs.mkdirSync(__dirname + '/additions/poloniex-' + time)
+            jsonfile.writeFileSync(__dirname + '/additions/poloniex-' + time + '/current.json', currentJSON)
+            jsonfile.writeFileSync(__dirname + '/additions/poloniex-' + time + '/currencies.json', json)
           } else {
             console.log("False alarm on Poloniex. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             jsonfile.writeFileSync(poloniexFile, currentJSON);
@@ -225,6 +241,10 @@ function coinExchange() {
               console.log("Tweet Response: " + response);
             });
             jsonfile.writeFileSync(coinExchangeFile, currentJSON);
+            var time = Date.now()
+            fs.mkdirSync(__dirname + '/additions/coinexchange-' + time)
+            jsonfile.writeFileSync(__dirname + '/additions/coinexchange-' + time + '/current.json', currentJSON)
+            jsonfile.writeFileSync(__dirname + '/additions/coinexchange-' + time + '/currencies.json', json)
           } else {
             console.log("False alarm on CoinExchange. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
             jsonfile.writeFileSync(coinExchangeFile, currentJSON);
