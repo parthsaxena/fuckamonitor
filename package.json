@@ -9,6 +9,7 @@
   "author": "Parth Saxena",
   "license": "ISC",
   "dependencies": {
+    "apn": "^2.2.0",
     "jsonfile": "^4.0.0"
   }
 }

@@ -5,6 +5,7 @@ var fs = require('fs');
 var jsonfile = require('jsonfile');
 var twitter = require('twitter');
 var cheerio = require('cheerio');
+var apn = require('apn');
 
 var bittrexFile = __dirname + "/support/bittrex/bittrex_currencies.json";
 var bittrexCurrentFile = __dirname + "/support/bittrex/bittrex_current.json";
@@ -21,14 +22,37 @@ var poloniexCurrentFile = __dirname + "/support/poloniex/poloniex_current.json";
 var coinExchangeFile = __dirname + "/support/coinexchange/coinexchange_currencies.json";
 var coinExchangeCurrentFile = __dirname + "/support/coinexchange/coinexchange_current.json";
 
+var gdaxFile = __dirname + "/support/gdax/gdax_currencies.json";
+var gdaxCurrentFile = __dirname + "/support/gdax/gdax_current.json";
+
 var bittrexRanFirst = false
 var gateIORanFirst = false
 var binanceRanFirst = false
 var poloniexRanFirst = false
 var coinExchangeRanFirst = false
+var gdaxRanFirst = false
+
+var gdaxRequestOptions = {
+  host: 'api.gdax.com',
+  port: 443,
+  headers: {'User-Agent': 'Mozilla/5.0'},
+  path: '/currencies',
+  method: 'GET'  
+}
+
+var options = {
+   token: {
+     key: "cert_notifications.p8",
+     keyId: "3UV67HCS32",
+     teamId: "69TNSUL7ZG"
+   },
+   production: false
+};
+var apnProvider = new apn.Provider(options);
+var deviceToken = "D6A661A715835B790A8FABB3A34922808266470AA467531DE108EDBE5D9F5227";
 
 var client = new twitter({
-  //consumer_key: 'g95e3CY2JC3fMvj4EI7ghf8x3',
+  consumer_key: 'g95e3CY2JC3fMvj4EI7ghf8x3',
   consumer_secret: 'cdEDUm0hGXdi1Kw2Bj11SUO2jNzGurKtpkBD7S14j4bL0uiZR6',
   access_token_key: '955934157565079552-ze0mn6S5quiqRY1SPPX8Ba2Z6B9HHi7',
   access_token_secret: 'LEdBSyFYHAtd65ihcDLwIill1yGmmxhkUlCp7HsAZz4lm'
@@ -65,6 +89,7 @@ function bittrex() {
             var currencyLink = "https://bittrex.com/Market/Index?MarketName=BTC-" + currencyName;
             var exchangeLink = "https://coincodex.com/crypto/" + currencyName.toLowerCase() + "/exchanges/";
             console.log("New coin added to Bittrex: " + currencyName + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            notification(currencyName + " has been added on the bittrex exchange!")
             client.post('statuses/update', {status:  currencyName + ' has been added on the bittrex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
@@ -114,6 +139,7 @@ function gateIO() {
             var currencyLink = "https://gate.io/trade/" + currency + "_BTC";
             var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
             console.log("New coin added to Gate.io: " + currency + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            notification(currency + " has been added on the gate.io exchange!")
             client.post('statuses/update', {status:  currency + ' has been added on the gate.io exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
@@ -155,6 +181,7 @@ function binance() {
           var currencyLink = "https://www.binance.com/trade.html?symbol=" + latestCurrency + "_BTC";
           var exchangeLink = "https://coincodex.com/crypto/" + latestCurrency.toLowerCase() + "/exchanges/";
           console.log("New coin added to Binance: " + latestCurrency)
+          notification(latestCurrency + " has been added on the binance exchange!")
           client.post('statuses/update', {status:  latestCurrency + ' has been added on the binance exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
             console.log("Tweet Response: " + response);
           });
@@ -194,6 +221,7 @@ function poloniex() {
             var currencyLink = "https://poloniex.com/exchange#btc_" + currency.toLowerCase();
             var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
             console.log("New coin added to Poloniex: " + currency + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            notification(currency + " has been added on the poloniex exchange!")
             client.post('statuses/update', {status:  currency + ' has been added on the poloniex exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
@@ -237,6 +265,7 @@ function coinExchange() {
             var currencyLink = "https://www.coinexchange.io/market/" + currency + "/BTC";
             var exchangeLink = "https://coincodex.com/crypto/" + currency.toLowerCase() + "/exchanges/";
             console.log("New coin added to CoinExchange: " + currency + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            notification(currency + " has been added on coinexchange!")
             client.post('statuses/update', {status:  currency + ' has been added on coinexchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
               console.log("Tweet Response: " + response);
             });
@@ -255,12 +284,58 @@ function coinExchange() {
   });
 }
 
+function gdax() {
+  var request = https.get(gdaxRequestOptions, function(response) {
+    var body = ""
+    response.on("data", function(chunk){
+		  body += chunk;
+	  });
+    response.on("end", function() {
+      var currentJSON = JSON.parse(body);
+      jsonfile.writeFileSync(gdaxCurrentFile, currentJSON);
+      if (!gdaxRanFirst) {
+        jsonfile.writeFileSync(gdaxFile, currentJSON);
+        gdaxRanFirst = true
+      } else {
+        var json = jsonfile.readFileSync(gdaxFile)
+        var currentJSON = jsonfile.readFileSync(gdaxCurrentFile)
+
+        if (objectEquals(json, currentJSON)) {
+          console.log("No change on GDAX.")
+        } else {
+          var currentCount = currentJSON.length;
+          var oldCount = json.length;
+          if (currentCount > oldCount) {
+            var currencyName = currentJSON[currentCount-1].id
+            var currencyLink = "https://www.gdax.com/trade/BTC-" + currencyName;
+            var exchangeLink = "https://coincodex.com/crypto/" + currencyName.toLowerCase() + "/exchanges/";
+            console.log("New coin added to GDAX: " + currencyName + " CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            notification(currencyName + " has been added on the gdax exchange!")
+            client.post('statuses/update', {status:  currencyName + ' has been added on the gdax exchange! ' + currencyLink + ' other exchanges: ' + exchangeLink},  function(error, tweet, response) {
+              console.log("Tweet Response: " + response);
+            });
+            jsonfile.writeFileSync(gdaxFile, currentJSON);
+            var time = Date.now()
+            fs.mkdirSync(__dirname + '/additions/gdax-' + time)
+            jsonfile.writeFileSync(__dirname + '/additions/gdax-' + time + '/current.json', currentJSON)
+            jsonfile.writeFileSync(__dirname + '/additions/gdax-' + time + '/currencies.json', json)
+          } else {
+            console.log("False alarm on GDAX. CurrentCount: " + currentCount + ", OldCount: " + oldCount)
+            jsonfile.writeFileSync(gdaxFile, currentJSON);
+          }
+        }
+      }
+    })
+  });
+}
+
 function setup() {
   setInterval(bittrex, INTERVAL)
   setInterval(gateIO, INTERVAL)
   setInterval(binance, INTERVAL)
   setInterval(poloniex, INTERVAL)
   setInterval(coinExchange, INTERVAL)
+  setInterval(gdax, INTERVAL)
 
   server()
 }
@@ -292,4 +367,21 @@ function server() {
    response.write("<html>fuckamonitor - v1.0.0; Server has been running for <code>" + process.uptime() + "</code> seconds.</html>")
    response.end()
  });
+}
+
+function notification(text) {
+  console.log("Sending notification")
+
+  var notification = new apn.Notification();
+  notification.expiry = Math.floor(Date.now() / 1000) + 24 * 3600;
+  notification.badge = 2;
+  notification.sound = "ping.aiff";
+  notification.alert = text;
+  notification.payload = {'messageFrom': 'fuckamonitor'};
+  notification.topic = "com.parth.fuckamonitor";
+
+  apnProvider.send(notification, deviceToken).then( result => {
+	   // Show the result of the send operation:
+	    console.log(result);
+  });
 }
