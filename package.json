@@ -10,6 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "apn": "^2.2.0",
-    "jsonfile": "^4.0.0"
+    "cheerio": "^1.0.0-rc.2",
+    "express": "^4.16.2",
+    "https-proxy-agent": "^2.1.1",
+    "jsonfile": "^4.0.0",
+    "twitter": "^1.7.1"
   }
 }
